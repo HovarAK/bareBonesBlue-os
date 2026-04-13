@@ -1,45 +1,91 @@
----
-# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
-# image will be published to ghcr.io/<user>/<name>
-name: bareBonesBlue-os
-# description will be included in the image's metadata
-description: This is my personal OS image.
+# Image Metadata
+name: atomicBlue-Desktop
+description: My Wayblue Hyprland (NVIDIA Open) image
+base_image: ghcr.io/wayblueorg/hyprland-nvidia-open
+image_version: latest
 
-# the base image to build on top of (FROM) and the version tag to use
-base-image: ghcr.io/ublue-os/silverblue-main
-image-version: 42 # latest is also supported if you want new updates ASAP
-
-# module configuration, executed in order
-# you can include multiple instances of the same module
 modules:
+  # Injects custom configuration files from your 'system' directory into the root
   - type: files
     files:
       - source: system
-        destination: / # copies files/system/* (* means everything inside it) into your image's root folder /
+        destination: /
 
+  # System package management (DNF)
   - type: dnf
     repos:
-      copr:
-        - atim/starship
+      - copr:atim/starship # External repository for the Starship prompt
     install:
-      packages:
-        - micro
-        - starship
+      # CLI Tools & Shell
+      - micro
+      - starship
+      - git
+      - neovim
+      - nnn
+      - zsh
+      # System Utilities & Drivers
+      - lm_sensors
+      - nvidia-container-toolkit
+      - tailscale
+      # Desktop Environment (Hyprland) specific tools
+      - chezmoi
+      - cliphist
+      - fuzzel
+      - hyprpolkitagent
+      - hyprshot
+      - nwg-look
+      - SwayNotificationCenter
+      # Container orchestration
+      - podman-compose
     remove:
-      packages:
-        # example: removing firefox (in favor of the flatpak)
-        # "firefox" is the main package, "firefox-langpacks" is a dependency
-        - firefox
-        - firefox-langpacks # also remove firefox dependency (not required for all packages, this is a special case)
+      # Removing default browser to replace with Flatpak versions
+      - firefox
+      - firefox-langpacks
+      # Specific hardware/protocol package removed per your system state
+      - pipewire-config-raop
 
+  # Manage background services
+  - type: systemd
+    system:
+      enabled:
+        - bluetooth.service
+        - tailscaled.service
+
+  # Declarative Flatpak installation
   - type: default-flatpaks
     configurations:
-      - notify: true # Send notification after install/uninstall is finished (true/false)
+      - notify: true
         scope: system
-        # If no repo information is specified, Flathub will be used by default
-        install: # system flatpaks we want all users to have and not remove
+        install:
+          # Web Browsers
           - org.mozilla.firefox
-          - org.gnome.Loupe
-      - scope: user # Also add Flathub user repo, but no user packages
+          - app.zen_browser.zen
 
-  - type: signing # this sets up the proper policy & signing files for signed images to work fully
+          # Communication & Security
+          - com.discordapp.Discord
+          - com.bitwarden.desktop
+
+          # Productivity & Development
+          - md.obsidian.Obsidian
+          - org.libreoffice.LibreOffice
+          - org.kde.kate
+          - org.kde.okular
+          - com.github.jeromerobert.pdfarranger
+          - com.visualstudio.code
+
+          # System Tools & Utilities
+          - com.github.tchx84.Flatseal
+          - io.github.flattool.Warehouse
+          - io.podman_desktop.PodmanDesktop
+          - org.gnome.clocks
+          - org.gnome.Loupe
+
+          # Media, Gaming & Hobbies
+          - com.valvesoftware.Steam
+          - org.prismlauncher.PrismLauncher
+          - org.photoqt.PhotoQt
+          - org.qbittorrent.qBittorrent
+          - com.calibre_ebook.calibre
+
+  # Generates cryptographic signatures for your image updates
+  - type: signing
