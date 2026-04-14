@@ -1,47 +1,22 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
-# Name of the resulting image.
 name: bareBones-os
-
-# Human-readable description of the image.
-description: My Wayblue Hyprland (NVIDIA Open) image
-
-# Base image to build from.
-# This uses the Wayblue Hyprland image with NVIDIA open driver support.
+description: Personal Fedora Atomic desktop image built with BlueBuild
 base-image: ghcr.io/wayblueorg/hyprland-nvidia-open
-
-# Image tag/version to build against.
 image-version: latest
 
 modules:
-  # Copy local files from your repository into the image.
-  # Commonly used for system configs, scripts, or custom assets.
-  - type: files
-    files:
-      # Copy everything from the local "system" directory
-      # into the root filesystem of the image.
-      - source: system
-        destination: /
-
-  # Install and remove RPM packages using the DNF module.
   - type: dnf
     repos:
-      # Remove temporary repo definitions after package operations complete.
       cleanup: true
-
-      # Enable the COPR repository that provides Starship.
       copr:
         - atim/starship
-
     install:
       packages:
-        # Fonts
         - jetbrains-mono-fonts
         - google-noto-sans-vf-fonts
         - google-noto-serif-vf-fonts
         - google-noto-sans-mono-vf-fonts
-
-        # Terminal and shell tools
         - micro
         - starship
         - git
@@ -49,15 +24,9 @@ modules:
         - nnn
         - zsh
         - lm_sensors
-
-        # Containers and NVIDIA-related tooling
         - nvidia-container-toolkit
         - podman-compose
-
-        # Networking
         - tailscale
-
-        # Desktop and Hyprland-related utilities
         - chezmoi
         - cliphist
         - fuzzel
@@ -65,60 +34,42 @@ modules:
         - hyprshot
         - nwg-look
         - SwayNotificationCenter
-
     remove:
       packages:
-        # Remove browser packages from the base image
-        # so they can be replaced with Flatpaks or omitted entirely.
         - firefox
         - firefox-langpacks
-
-        # Remove unused PipeWire RAOP/AirPlay config.
         - pipewire-config-raop
 
-  # Enable systemd services inside the image so they start automatically.
   - type: systemd
     system:
       enabled:
-        # Enable Bluetooth support on boot.
         - bluetooth.service
-
-        # Enable Tailscale daemon on boot.
         - tailscaled.service
 
-  # Define system-wide Flatpaks that should be installed for all users.
   - type: default-flatpaks@v2
     configurations:
-      - notify: true   # Notify the user when Flatpak changes are applied.
-        scope: system  # Install Flatpaks system-wide instead of per-user.
+      - notify: true
+        scope: system
         install:
-          # Web browsers and communication
           - org.mozilla.firefox
           - app.zen_browser.zen
           - com.discordapp.Discord
           - com.bitwarden.desktop
-
-          # Notes, office, and development
           - md.obsidian.Obsidian
           - org.libreoffice.LibreOffice
           - org.kde.kate
           - org.kde.okular
           - com.github.jeromerobert.pdfarranger
           - com.visualstudio.code
-
-          # Utilities and system tools
           - com.github.tchx84.Flatseal
           - io.github.flattool.Warehouse
           - io.podman_desktop.PodmanDesktop
           - org.gnome.clocks
           - org.gnome.Loupe
-
-          # Gaming and media
           - com.valvesoftware.Steam
           - org.prismlauncher.PrismLauncher
           - org.photoqt.PhotoQt
           - org.qbittorrent.qBittorrent
           - com.calibre_ebook.calibre
 
-  # Sign the built image so it can be verified during deployment and updates.
   - type: signing
