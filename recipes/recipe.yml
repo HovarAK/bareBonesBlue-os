@@ -1,71 +1,104 @@
-# Image Metadata
-name: atomicBlue-Desktop
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+
+# Name of the resulting image.
+name: bareBones-os
+
+# Human-readable description of the image.
 description: My Wayblue Hyprland (NVIDIA Open) image
-base_image: ghcr.io/wayblueorg/hyprland-nvidia-open
-image_version: latest
+
+# Base image to build from.
+# This uses the Wayblue Hyprland image with NVIDIA open driver support.
+base-image: ghcr.io/wayblueorg/hyprland-nvidia-open
+
+# Image tag/version to build against.
+image-version: latest
 
 modules:
-  # Injects custom configuration files from your 'system' directory into the root
+  # Copy local files from your repository into the image.
+  # Commonly used for system configs, scripts, or custom assets.
   - type: files
     files:
+      # Copy everything from the local "system" directory
+      # into the root filesystem of the image.
       - source: system
         destination: /
 
-  # System package management (DNF)
+  # Install and remove RPM packages using the DNF module.
   - type: dnf
     repos:
-      - copr:atim/starship # External repository for the Starship prompt
-    install:
-      # CLI Tools & Shell
-      - micro
-      - starship
-      - git
-      - neovim
-      - nnn
-      - zsh
-      # System Utilities & Drivers
-      - lm_sensors
-      - nvidia-container-toolkit
-      - tailscale
-      # Desktop Environment (Hyprland) specific tools
-      - chezmoi
-      - cliphist
-      - fuzzel
-      - hyprpolkitagent
-      - hyprshot
-      - nwg-look
-      - SwayNotificationCenter
-      # Container orchestration
-      - podman-compose
-    remove:
-      # Removing default browser to replace with Flatpak versions
-      - firefox
-      - firefox-langpacks
-      # Specific hardware/protocol package removed per your system state
-      - pipewire-config-raop
+      # Remove temporary repo definitions after package operations complete.
+      cleanup: true
 
-  # Manage background services
+      # Enable the COPR repository that provides Starship.
+      copr:
+        - atim/starship
+
+    install:
+      packages:
+        # Fonts
+        - jetbrains-mono-fonts
+        - google-noto-sans-vf-fonts
+        - google-noto-serif-vf-fonts
+        - google-noto-sans-mono-vf-fonts
+
+        # Terminal and shell tools
+        - micro
+        - starship
+        - git
+        - neovim
+        - nnn
+        - zsh
+        - lm_sensors
+
+        # Containers and NVIDIA-related tooling
+        - nvidia-container-toolkit
+        - podman-compose
+
+        # Networking
+        - tailscale
+
+        # Desktop and Hyprland-related utilities
+        - chezmoi
+        - cliphist
+        - fuzzel
+        - hyprpolkitagent
+        - hyprshot
+        - nwg-look
+        - SwayNotificationCenter
+
+    remove:
+      packages:
+        # Remove browser packages from the base image
+        # so they can be replaced with Flatpaks or omitted entirely.
+        - firefox
+        - firefox-langpacks
+
+        # Remove unused PipeWire RAOP/AirPlay config.
+        - pipewire-config-raop
+
+  # Enable systemd services inside the image so they start automatically.
   - type: systemd
     system:
       enabled:
+        # Enable Bluetooth support on boot.
         - bluetooth.service
+
+        # Enable Tailscale daemon on boot.
         - tailscaled.service
 
-  # Declarative Flatpak installation
-  - type: default-flatpaks
+  # Define system-wide Flatpaks that should be installed for all users.
+  - type: default-flatpaks@v2
     configurations:
-      - notify: true
-        scope: system
+      - notify: true   # Notify the user when Flatpak changes are applied.
+        scope: system  # Install Flatpaks system-wide instead of per-user.
         install:
-          # Web Browsers
+          # Web browsers and communication
           - org.mozilla.firefox
           - app.zen_browser.zen
-
-          # Communication & Security
           - com.discordapp.Discord
           - com.bitwarden.desktop
 
-          # Productivity & Development
+          # Notes, office, and development
           - md.obsidian.Obsidian
           - org.libreoffice.LibreOffice
           - org.kde.kate
@@ -73,19 +106,19 @@ modules:
           - com.github.jeromerobert.pdfarranger
           - com.visualstudio.code
 
-          # System Tools & Utilities
+          # Utilities and system tools
           - com.github.tchx84.Flatseal
           - io.github.flattool.Warehouse
           - io.podman_desktop.PodmanDesktop
           - org.gnome.clocks
           - org.gnome.Loupe
 
-          # Media, Gaming & Hobbies
+          # Gaming and media
           - com.valvesoftware.Steam
           - org.prismlauncher.PrismLauncher
           - org.photoqt.PhotoQt
           - org.qbittorrent.qBittorrent
           - com.calibre_ebook.calibre
 
-  # Generates cryptographic signatures for your image updates
+  # Sign the built image so it can be verified during deployment and updates.
   - type: signing
