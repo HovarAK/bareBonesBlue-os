@@ -21,14 +21,15 @@ This repository is intentionally kept small. The main files are:
 ├── cosign.pub
 ├── files/
 │   └── README.md
-├── recipe.yml
+├── recipes/
+│   └── recipe.yml
 └── README.md
 ```
 
 What each part does:
 
-- `recipe.yml`: the single source of truth for the image definition. This is where the base image, RPM packages, enabled services, Flatpaks, and signing module are declared.
-- `.github/workflows/build.yml`: builds and publishes the image in GitHub Actions. It points directly at `recipe.yml`.
+- `recipes/recipe.yml`: the single source of truth for the image definition. This is where the base image, RPM packages, enabled services, Flatpaks, and signing module are declared.
+- `.github/workflows/build.yml`: builds and publishes the image in GitHub Actions. It points directly at `recipes/recipe.yml`.
 - `cosign.pub`: the public key used to verify signed images.
 - `files/`: optional overlay content. It is not active right now. Add a `files` module back to `recipe.yml` when you want to copy files like `/etc` configuration, branding assets, or custom scripts into the image.
 
@@ -81,7 +82,7 @@ cd barebonesblue-os
 This is useful when you want to inspect exactly what BlueBuild will build.
 
 ```bash
-bluebuild generate ./recipe.yml -o Containerfile
+bluebuild generate ./recipes/recipe.yml -o Containerfile
 ```
 
 The generated `Containerfile` is ignored by git in this repository because it is build output, not source.
@@ -89,7 +90,7 @@ The generated `Containerfile` is ignored by git in this repository because it is
 ### 4. Build the image locally
 
 ```bash
-bluebuild build ./recipe.yml
+bluebuild build ./recipes/recipe.yml
 ```
 
 This validates that the recipe builds locally before you push changes to GitHub.
@@ -99,7 +100,7 @@ This validates that the recipe builds locally before you push changes to GitHub.
 BlueBuild provides a workflow command for this:
 
 ```bash
-sudo bluebuild switch ./recipe.yml
+sudo bluebuild switch ./recipes/recipe.yml
 ```
 
 That command builds the image, exports it, and performs the `rpm-ostree` rebase locally. On a real workstation, use a test deployment or a VM first.
@@ -115,7 +116,7 @@ Official BlueBuild ISO docs:
 To build an ISO directly from this local recipe:
 
 ```bash
-sudo bluebuild generate-iso --iso-name bareBonesBlue-os.iso recipe ./recipe.yml
+sudo bluebuild generate-iso --iso-name bareBonesBlue-os.iso recipe ./recipes/recipe.yml
 ```
 
 This produces `bareBonesBlue-os.iso` in the current working directory. Create a new VM, attach that ISO, and install it the same way you would install any Fedora Atomic desktop.
