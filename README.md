@@ -44,7 +44,13 @@ BlueBuild uses a recipe-first workflow:
 
 In this repository, `recipe.yml` is organized into a small set of modules:
 
-- `dnf`: installs RPM packages like `neovim`, `zsh`, `tailscale`, Hyprland utilities, and fonts; it also removes inherited packages that are not wanted in the final image.
+- `dnf`: installs RPM packages, then removes inherited packages that are not wanted in the final image (`firefox`, `firefox-langpacks`, `pipewire-config-raop`). The installed packages are:
+  - Fonts: `google-noto-sans-vf-fonts`, `google-noto-serif-vf-fonts`, `google-noto-sans-mono-vf-fonts`
+  - Shell and terminal: `git`, `neovim`, `nnn`, `zsh`, `lm_sensors`, `btop`
+  - Development: `java-21-openjdk`
+  - Containers and NVIDIA: `nvidia-container-toolkit`, `podman-compose`, `distrobox`
+  - Networking: `tailscale`, `mullvad-vpn`
+  - Desktop and Hyprland utilities: `chezmoi`, `cliphist`, `fuzzel`, `hyprpolkitagent`, `hyprshot`, `kanshi`, `nwg-look`, `SwayNotificationCenter`
 - `systemd`: enables services that should be on by default, currently Bluetooth and Tailscale.
 - `default-flatpaks@v2`: installs the desktop application set system-wide.
 - `signing`: signs the output image so rebases can be verified.
