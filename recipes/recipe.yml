@@ -9,6 +9,12 @@ modules:
   - type: dnf
     repos:
       cleanup: true
+      files:
+        - https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo
+        - https://repository.mullvad.net/rpm/stable/mullvad.repo
+      keys:
+        - https://nvidia.github.io/libnvidia-container/gpgkey
+        - https://repository.mullvad.net/rpm/mullvad-keyring.asc
     install:
       packages:
         - google-noto-sans-vf-fonts
@@ -20,7 +26,7 @@ modules:
         - zsh
         - lm_sensors
         - btop
-        - java-21-openjdk
+        - java-25-openjdk
         - nvidia-container-toolkit
         - podman-compose
         - distrobox
@@ -30,9 +36,7 @@ modules:
         - cliphist
         - fuzzel
         - hyprpolkitagent
-        - hyprshot
         - kanshi
-        - nwg-look
         - SwayNotificationCenter
     remove:
       packages:
