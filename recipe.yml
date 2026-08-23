@@ -9,29 +9,29 @@ modules:
   - type: dnf
     repos:
       cleanup: true
-      copr:
-        - atim/starship
     install:
       packages:
-        - jetbrains-mono-fonts
         - google-noto-sans-vf-fonts
         - google-noto-serif-vf-fonts
         - google-noto-sans-mono-vf-fonts
-        - micro
-        - starship
         - git
         - neovim
         - nnn
         - zsh
         - lm_sensors
+        - btop
+        - java-21-openjdk
         - nvidia-container-toolkit
         - podman-compose
+        - distrobox
         - tailscale
+        - mullvad-vpn
         - chezmoi
         - cliphist
         - fuzzel
         - hyprpolkitagent
         - hyprshot
+        - kanshi
         - nwg-look
         - SwayNotificationCenter
     remove:
